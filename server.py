@@ -10,7 +10,8 @@ import db
 import mailer
 
 PORT = int(os.environ.get('PORT', 8000))
-PUBLIC_DIR = os.path.join(os.path.dirname(__file__), 'public')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PUBLIC_DIR = os.path.join(BASE_DIR, 'public') if os.path.isdir(os.path.join(BASE_DIR, 'public')) else BASE_DIR
 
 class DFOXTrackerHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -40,7 +41,6 @@ class DFOXTrackerHandler(http.server.SimpleHTTPRequestHandler):
         if auth_header.startswith('Bearer '):
             token = auth_header.replace('Bearer ', '').strip()
         if not token:
-            # Check cookie
             cookie_header = self.headers.get('Cookie', '')
             for cookie in cookie_header.split(';'):
                 if 'dfox_session=' in cookie:
@@ -48,6 +48,28 @@ class DFOXTrackerHandler(http.server.SimpleHTTPRequestHandler):
         if token:
             return db.get_user_by_session(token)
         return None
+
+    def _serve_file(self, file_path, content_type=None):
+        if not os.path.exists(file_path) or not os.path.isfile(file_path):
+            self.send_error(404, "File not found")
+            return
+        
+        if not content_type:
+            content_type, _ = mimetypes.guess_type(file_path)
+            if not content_type:
+                content_type = 'application/octet-stream'
+
+        try:
+            with open(file_path, 'rb') as f:
+                content = f.read()
+            self.send_response(200)
+            self.send_header('Content-Type', content_type)
+            self.send_header('Content-Length', str(len(content)))
+            self.send_header('Cache-Control', 'no-cache')
+            self.end_headers()
+            self.wfile.write(content)
+        except Exception as e:
+            self.send_error(500, f"Error reading file: {e}")
 
     def do_OPTIONS(self):
         self.send_response(204)
@@ -73,12 +95,9 @@ class DFOXTrackerHandler(http.server.SimpleHTTPRequestHandler):
 
         # API Endpoints
         if path.startswith('/api/'):
-            # Current logged in user
             if path == '/api/auth/me':
                 user = self._get_current_user()
-                if user:
-                    return self._send_json({'user': user})
-                return self._send_json({'user': None})
+                return self._send_json({'user': user})
 
             elif path == '/api/tasks':
                 assignee_id = query.get('assignee_id', [None])[0]
@@ -153,7 +172,53 @@ class DFOXTrackerHandler(http.server.SimpleHTTPRequestHandler):
 
             return self._send_json({'error': 'Endpoint not found'}, 404)
 
-        # Static files fallback
+        # ----------------- Robust Static File Serving -----------------
+        # Handle index.html
+        if path == '/' or path == '/index.html':
+            for cand in [
+                os.path.join(BASE_DIR, 'public', 'index.html'),
+                os.path.join(BASE_DIR, 'index.html')
+            ]:
+                if os.path.isfile(cand):
+                    return self._serve_file(cand, 'text/html; charset=utf-8')
+
+        # Handle CSS files
+        if path.endswith('.css'):
+            filename = os.path.basename(path)
+            for cand in [
+                os.path.join(BASE_DIR, 'public', 'css', filename),
+                os.path.join(BASE_DIR, 'public', filename),
+                os.path.join(BASE_DIR, 'css', filename),
+                os.path.join(BASE_DIR, filename)
+            ]:
+                if os.path.isfile(cand):
+                    return self._serve_file(cand, 'text/css; charset=utf-8')
+
+        # Handle JS files
+        if path.endswith('.js'):
+            filename = os.path.basename(path)
+            for cand in [
+                os.path.join(BASE_DIR, 'public', 'js', filename),
+                os.path.join(BASE_DIR, 'public', filename),
+                os.path.join(BASE_DIR, 'js', filename),
+                os.path.join(BASE_DIR, filename)
+            ]:
+                if os.path.isfile(cand):
+                    return self._serve_file(cand, 'application/javascript; charset=utf-8')
+
+        # Handle Image files
+        if path.endswith(('.png', '.jpg', '.jpeg', '.svg', '.ico')):
+            filename = os.path.basename(path)
+            for cand in [
+                os.path.join(BASE_DIR, 'public', 'assets', filename),
+                os.path.join(BASE_DIR, 'public', filename),
+                os.path.join(BASE_DIR, 'assets', filename),
+                os.path.join(BASE_DIR, filename)
+            ]:
+                if os.path.isfile(cand):
+                    return self._serve_file(cand)
+
+        # Fallback to default handler
         super().do_GET()
 
     def do_POST(self):
@@ -163,7 +228,7 @@ class DFOXTrackerHandler(http.server.SimpleHTTPRequestHandler):
         if path.startswith('/api/'):
             body = self._read_json_body()
 
-            # ----------------- Auth Endpoints -----------------
+            # Auth Endpoints
             if path == '/api/auth/signup':
                 name = body.get('name', '').strip()
                 email = body.get('email', '').strip()
@@ -177,7 +242,6 @@ class DFOXTrackerHandler(http.server.SimpleHTTPRequestHandler):
                 if err:
                     return self._send_json({'error': err}, 400)
 
-                # Send verification email with 6-digit OTP
                 otp_code = user.get('verification_otp')
                 email_result = mailer.send_verification_email(user, otp_code)
 
@@ -224,7 +288,6 @@ class DFOXTrackerHandler(http.server.SimpleHTTPRequestHandler):
 
                 auth_data, err = db.authenticate_user(email, password)
                 if err == 'UNVERIFIED_ACCOUNT':
-                    # Send fresh OTP
                     user = db.get_db().cursor().execute('SELECT * FROM users WHERE email = ?', (email.lower(),)).fetchone()
                     if user and user['verification_otp']:
                         mailer.send_verification_email(dict(user), user['verification_otp'])
@@ -249,12 +312,10 @@ class DFOXTrackerHandler(http.server.SimpleHTTPRequestHandler):
                     db.delete_session(token)
                 return self._send_json({'message': 'Logged out successfully'})
 
-            # ----------------- Tasks & Settings Endpoints -----------------
             elif path == '/api/tasks':
                 if not body.get('title'):
                     return self._send_json({'error': 'Task title is required'}, 400)
                     
-                # Current user who created the task
                 current_user = self._get_current_user()
                 if current_user:
                     body['created_by'] = f"{current_user['name']} ({current_user['role']})"
@@ -363,7 +424,7 @@ def run_server():
         allow_reuse_address = True
 
     with ReusableTCPServer(("", PORT), DFOXTrackerHandler) as httpd:
-        print(f"🚀 DFOX Dev Task Tracker server running at: http://localhost:{PORT}")
+        print(f"🚀 DFOX Dev Task Tracker server running at port: {PORT}")
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
