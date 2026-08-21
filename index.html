@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DFOX MEDIA &bull; Dev Task Tracker</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       VIEW A: DEDICATED AUTHENTICATION & REGISTRATION PORTAL (DEFAULT)
+       ========================================================================== -->
+  <div id="auth-portal-view" class="auth-portal-container">
+    <div class="auth-portal-box">
+      
+      <!-- Brand Header -->
+      <div class="auth-portal-header">
+        <img src="/assets/logo.png" alt="DFOX MEDIA" class="auth-portal-logo">
+        <div style="font-size: 0.72rem; font-weight: 800; color: var(--dfox-magenta); letter-spacing: 1.5px; text-transform: uppercase;">
+          DEV DEPARTMENT
+        </div>
+        <h2 style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin-top: 4px;">
+          Task &amp; Efficiency Tracker
+        </h2>
+      </div>
+
+      <div class="auth-portal-body">
+        
+        <!-- Toggle Tabs: Sign In / Create Account -->
+        <div id="auth-toggle-nav" class="auth-tabs">
+          <button type="button" class="auth-tab-btn active" id="tab-btn-login" onclick="App.showPortalScreen('login')">
+            Sign In
+          </button>
+          <button type="button" class="auth-tab-btn" id="tab-btn-signup" onclick="App.showPortalScreen('signup')">
+            Create Account
+          </button>
+        </div>
+
+        <!-- SCREEN 1: SIGN IN -->
+        <div id="portal-screen-login">
+          <form onsubmit="App.handleLoginSubmit(event)">
+            <div class="form-group">
+              <label class="form-label">Company Email *</label>
+              <input type="email" id="login-email" class="form-control" placeholder="name@dfoxmedia.com" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Password *</label>
+              <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+            </div>
+
+            <div style="margin-top: 1.5rem;">
+              <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem; font-size: 0.95rem;">
+                Sign In to Tracker &rarr;
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- SCREEN 2: CREATE ACCOUNT -->
+        <div id="portal-screen-signup" style="display: none;">
+          <form onsubmit="App.handleSignupSubmit(event)">
+            <div class="form-group">
+              <label class="form-label">Full Name *</label>
+              <input type="text" id="signup-name" class="form-control" placeholder="e.g. Sachin Pawar or Rupesh Ghumare" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Company Email *</label>
+              <input type="email" id="signup-email" class="form-control" placeholder="name@dfoxmedia.com" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Designation / Role *</label>
+              <input type="text" id="signup-designation" class="form-control" placeholder="e.g. HOD Development, Team Lead, Senior Developer" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Password *</label>
+              <input type="password" id="signup-password" class="form-control" placeholder="Create a strong password" required minlength="6">
+            </div>
+
+            <div style="background: #f8fafc; border: 1px solid var(--dfox-border-subtle); border-radius: var(--radius-sm); padding: 0.75rem; margin-bottom: 1.25rem; font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;">
+              ✉️ A <strong>6-digit verification code</strong> will be sent to your email to verify and activate your account.
+            </div>
+
+            <div>
+              <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem; font-size: 0.95rem;">
+                Create Account &amp; Send OTP &rarr;
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- SCREEN 3: EMAIL OTP VERIFICATION -->
+        <div id="portal-screen-verify" style="display: none; text-align: center;">
+          <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📩</div>
+          <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.4rem;">Verify Your Email</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+            We sent a 6-digit verification code to <br><strong id="verify-display-email" style="color: var(--dfox-purple-dark);"></strong>
+          </p>
+
+          <form onsubmit="App.handleVerifySubmit(event)">
+            <div class="form-group" style="max-width: 260px; margin: 0 auto 1.5rem auto;">
+              <label class="form-label">Enter 6-Digit OTP Code</label>
+              <input type="text" id="verify-otp-input" class="form-control" placeholder="• • • • • •" maxlength="6" style="text-align: center; font-size: 1.6rem; font-family: monospace; letter-spacing: 6px; font-weight: 900;" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem; font-size: 0.95rem;">
+              Verify &amp; Activate Account &rarr;
+            </button>
+          </form>
+
+          <div style="margin-top: 1.5rem; font-size: 0.82rem; color: var(--text-muted);">
+            Didn't receive code? <a href="javascript:void(0)" onclick="App.handleResendVerification()" style="color: var(--dfox-magenta); font-weight: 700; text-decoration: none;">Resend Code</a>
+            <br><br>
+            <a href="javascript:void(0)" onclick="App.showPortalScreen('login')" style="color: var(--text-muted); text-decoration: none;">&larr; Back to Sign In</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       VIEW B: MAIN APPLICATION DASHBOARD (SHOWN AFTER LOGIN)
+       ========================================================================== -->
+  <div id="app-dashboard-view" style="display: none;">
+
+    <!-- Top Header Navigation -->
+    <header class="header">
+      <div class="header-container">
+        <div class="brand-section">
+          <img src="/assets/logo.png" alt="DFOX MEDIA" class="brand-logo-img">
+          <div class="brand-title-group">
+            <span class="app-badge">DEV DEPARTMENT</span>
+            <span class="app-title">Task &amp; Efficiency Tracker</span>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <!-- Live Stopwatch Widget -->
+          <div class="header-timer-box">
+            <div id="active-stopwatch-display" class="timer-display-compact">00:00:00</div>
+            <button id="btn-timer-start" class="btn btn-secondary" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;" title="Start Timer">▶ Start</button>
+            <button id="btn-timer-pause" class="btn btn-secondary" style="padding: 0.35rem 0.65rem; font-size: 0.78rem; display: none; color: #d97706;" title="Pause Timer">⏸ Pause</button>
+            <button id="btn-timer-reset" class="btn btn-secondary" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;" title="Reset Timer">↺</button>
+          </div>
+
+          <!-- Role View Switcher -->
+          <div class="role-pill-selector">
+            <button class="role-pill active" data-role="lead">
+              👑 Lead (All)
+            </button>
+            <button class="role-pill" data-role="dev">
+              👤 Developer
+            </button>
+          </div>
+
+          <!-- Dev Select Dropdown in Developer View -->
+          <div id="dev-select-wrapper" class="dev-select-container">
+            <select id="header-dev-select" class="dev-select"></select>
+          </div>
+
+          <button id="btn-new-task" class="btn btn-primary">
+            <span>+</span> Assign Task
+          </button>
+
+          <button id="btn-open-settings" class="btn btn-icon" title="Email & SMTP Settings">
+            ⚙️
+          </button>
+
+          <button class="btn btn-secondary" onclick="App.exportCSV()" title="Export CSV Report">
+            📥 CSV
+          </button>
+
+          <!-- User Profile & Logout -->
+          <div id="auth-user-section" style="display: flex; align-items: center; gap: 0.5rem;"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs-wrapper">
+      <div class="nav-tabs">
+        <button class="tab-btn active" data-tab="tasks">
+          <span>📋</span> Tasks
+        </button>
+        <button class="tab-btn" data-tab="analytics">
+          <span>🏆</span> Efficiency Leaderboard
+        </button>
+        <button class="tab-btn" data-tab="members">
+          <span>👥</span> Team Members
+        </button>
+        <button class="tab-btn" data-tab="emails">
+          <span>✉️</span> Email Notifications
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Container -->
+    <main class="main-container">
+
+      <!-- Key Metrics Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon-wrapper">📋</div>
+          <div class="stat-info">
+            <div id="stat-total-tasks" class="stat-value">0</div>
+            <div class="stat-label">Total Tasks</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper">⚡</div>
+          <div class="stat-info">
+            <div id="stat-in-progress" class="stat-value" style="color: #0284c7;">0</div>
+            <div class="stat-label">In Progress</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper">✅</div>
+          <div class="stat-info">
+            <div id="stat-completed" class="stat-value" style="color: #059669;">0</div>
+            <div class="stat-label">Completed</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper">🚀</div>
+          <div class="stat-info">
+            <div id="stat-avg-efficiency" class="stat-value" style="background: var(--dfox-gradient-btn); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0%</div>
+            <div class="stat-label">Avg Efficiency</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper">⏱️</div>
+          <div class="stat-info">
+            <div id="stat-total-hours" class="stat-value" style="font-size: 1.35rem;">0h / 0h</div>
+            <div class="stat-label">Actual vs Allocated</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 1: TASKS BOARD -->
+      <div id="view-tasks" class="tab-view">
+        <!-- Toolbar Filters -->
+        <div class="toolbar">
+          <div class="filter-group">
+            <div class="search-box">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="filter-search" placeholder="Search tasks, descriptions, devs...">
+            </div>
+
+            <select id="filter-priority" class="select-filter">
+              <option value="ALL">All Priorities</option>
+              <option value="Urgent">🔴 Urgent</option>
+              <option value="High">🟠 High</option>
+              <option value="Medium">🟣 Medium</option>
+              <option value="Low">🔵 Low</option>
+            </select>
+
+            <select id="filter-assignee" class="select-filter">
+              <option value="ALL">All Assignees</option>
+            </select>
+          </div>
+
+          <div class="view-toggle-group">
+            <button class="view-toggle-btn active" data-view="kanban">
+              <span>▤</span> Kanban
+            </button>
+            <button class="view-toggle-btn" data-view="table">
+              <span>☰</span> Table
+            </button>
+          </div>
+        </div>
+
+        <!-- Kanban Board -->
+        <div id="kanban-container" class="kanban-board">
+          <div class="kanban-column">
+            <div class="column-header">
+              <div class="column-title">
+                <span class="column-dot" style="background: var(--status-assigned);"></span>
+                <span>Assigned</span>
+              </div>
+              <span id="count-assigned" class="column-count">0</span>
+            </div>
+            <div id="col-assigned" class="column-tasks"></div>
+          </div>
+
+          <div class="kanban-column">
+            <div class="column-header">
+              <div class="column-title">
+                <span class="column-dot" style="background: var(--status-progress);"></span>
+                <span>In Progress</span>
+              </div>
+              <span id="count-in-progress" class="column-count">0</span>
+            </div>
+            <div id="col-in-progress" class="column-tasks"></div>
+          </div>
+
+          <div class="kanban-column">
+            <div class="column-header">
+              <div class="column-title">
+                <span class="column-dot" style="background: var(--status-review);"></span>
+                <span>In Review</span>
+              </div>
+              <span id="count-in-review" class="column-count">0</span>
+            </div>
+            <div id="col-in-review" class="column-tasks"></div>
+          </div>
+
+          <div class="kanban-column">
+            <div class="column-header">
+              <div class="column-title">
+                <span class="column-dot" style="background: var(--status-completed);"></span>
+                <span>Completed</span>
+              </div>
+              <span id="count-completed" class="column-count">0</span>
+            </div>
+            <div id="col-completed" class="column-tasks"></div>
+          </div>
+        </div>
+
+        <!-- Table View -->
+        <div id="table-container" class="table-view-container" style="display: none;">
+          <table class="tasks-table">
+            <thead>
+              <tr>
+                <th>Task</th>
+                <th>Assignee</th>
+                <th>Status</th>
+                <th>Allocated</th>
+                <th>Actual Spent</th>
+                <th>Efficiency</th>
+                <th>Due Date</th>
+              </tr>
+            </thead>
+            <tbody id="tasks-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- VIEW 2: EFFICIENCY LEADERBOARD -->
+      <div id="view-analytics" class="tab-view analytics-view" style="display: none;">
+        <div id="leaderboard-container" class="leaderboard-grid"></div>
+      </div>
+
+      <!-- VIEW 3: TEAM MEMBERS -->
+      <div id="view-members" class="tab-view" style="display: none;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+          <div>
+            <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-main);">Development Team Directory</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Registered and verified members in DFOX Dev Department.</p>
+          </div>
+          <button class="btn btn-primary" onclick="App.openCreateMemberModal()">+ Add Team Member</button>
+        </div>
+
+        <div class="table-view-container">
+          <table class="tasks-table">
+            <thead>
+              <tr>
+                <th>Member</th>
+                <th>Company Email</th>
+                <th>Role</th>
+                <th>Designation</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="members-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- VIEW 4: EMAIL NOTIFICATIONS -->
+      <div id="view-emails" class="tab-view" style="display: none;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+          <div>
+            <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-main);">Email Notifications Log</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Dispatched task assignment and account verification emails.</p>
+          </div>
+          <button class="btn btn-secondary" onclick="App.openSettingsModal()">⚙️ SMTP Settings</button>
+        </div>
+
+        <div class="email-log-card">
+          <div id="email-logs-list"></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL 1: ASSIGN TASK
+       ========================================================================== -->
+  <div id="modal-create-task" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">Assign Task</div>
+        <button class="modal-close-btn" onclick="App.closeModal('modal-create-task')">&times;</button>
+      </div>
+      <form onsubmit="App.handleCreateTaskSubmit(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Task Title *</label>
+            <input type="text" id="create-task-title" class="form-control" placeholder="e.g. Implement User Authentication API" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Task Details</label>
+            <textarea id="create-task-desc" class="form-control" placeholder="Detailed requirements and specifications..."></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Priority</label>
+              <select id="create-task-priority" class="form-control">
+                <option value="Medium">🟣 Medium</option>
+                <option value="Urgent">🔴 Urgent</option>
+                <option value="High">🟠 High</option>
+                <option value="Low">🔵 Low</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Assign To *</label>
+              <select id="create-assignee-select" class="form-control" required></select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Allocated Duration *</label>
+              <div style="display: flex; gap: 0.5rem;">
+                <input type="number" id="create-alloc-hours" class="form-control" placeholder="Hours" min="0" value="2" required>
+                <input type="number" id="create-alloc-mins" class="form-control" placeholder="Mins" min="0" max="59" value="0">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Due Date</label>
+              <input type="date" id="create-due-date" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 0.5rem;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-body); cursor: pointer;">
+              <input type="checkbox" id="create-send-email" checked style="accent-color: var(--dfox-magenta); width: 16px; height: 16px;">
+              <span>Send email notification to developer</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModal('modal-create-task')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Assign Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL 2: TASK DETAILS & TIME LOGGING
+       ========================================================================== -->
+  <div id="modal-task-action" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">Task Details &amp; Time Tracking</div>
+        <button class="modal-close-btn" onclick="App.closeModal('modal-task-action')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom: 1.25rem;">
+          <h3 id="action-task-title" style="font-size: 1.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.4rem;"></h3>
+          <p id="action-task-desc" style="font-size: 0.85rem; color: var(--text-body); line-height: 1.5; white-space: pre-wrap; background: #f8fafc; border: 1px solid var(--dfox-border-subtle); padding: 1rem; border-radius: var(--radius-md);"></p>
+        </div>
+
+        <!-- Task Metadata Grid -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem; font-size: 0.82rem; background: #f8fafc; border: 1px solid var(--dfox-border-subtle); padding: 0.9rem; border-radius: var(--radius-md);">
+          <div><span style="color:var(--text-muted);">Assignee:</span> <strong id="action-task-assignee" style="color:var(--text-main);"></strong></div>
+          <div><span style="color:var(--text-muted);">Priority:</span> <strong id="action-task-priority"></strong></div>
+          <div><span style="color:var(--text-muted);">Allocated Time:</span> <strong id="action-task-allocated" style="color:#0284c7;"></strong></div>
+          <div><span style="color:var(--text-muted);">Due Date:</span> <strong id="action-task-due" style="color:#e11d48;"></strong></div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--dfox-border-subtle); margin: 1.25rem 0;">
+
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select id="action-task-status" class="form-control">
+            <option value="Assigned">Assigned</option>
+            <option value="In Progress">In Progress</option>
+            <option value="In Review">In Review</option>
+            <option value="Completed">Completed &bull; Calculate Efficiency</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem;">
+            <label class="form-label" style="margin-bottom: 0;">Actual Time Taken</label>
+            <button type="button" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.72rem; color: var(--dfox-magenta);" onclick="App.syncTimerToModal()">
+              ⏱️ Sync from Stopwatch
+            </button>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="number" id="complete-actual-hours" class="form-control" placeholder="Hours" min="0" step="0.5" value="0">
+            <input type="number" id="complete-actual-mins" class="form-control" placeholder="Minutes" min="0" max="59" value="0">
+          </div>
+        </div>
+
+        <!-- Calculated Efficiency Preview -->
+        <div style="background: var(--dfox-gradient-banner); border: 1.5px solid var(--dfox-border); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Calculated Efficiency</div>
+            <div id="preview-efficiency-val" style="font-size: 1.6rem; font-weight: 900; color: var(--dfox-purple-dark);">0%</div>
+          </div>
+          <div id="preview-efficiency-badge" class="efficiency-badge">Enter actual time</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Completion Notes</label>
+          <textarea id="complete-notes" class="form-control" placeholder="Summary of work delivered..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">PR / Deploy URL</label>
+          <input type="url" id="complete-pr-link" class="form-control" placeholder="https://github.com/org/repo/pull/123">
+        </div>
+      </div>
+
+      <div class="modal-footer" style="justify-content: space-between;">
+        <div>
+          <button type="button" class="btn btn-secondary" style="color: #e11d48;" onclick="App.handleDeleteTask()">Delete</button>
+          <button type="button" class="btn btn-secondary" onclick="App.handleResendTaskEmail()">📧 Resend Email</button>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModal('modal-task-action')">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="App.handleTaskActionSave()">Save Task</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL 4: SETTINGS
+       ========================================================================== -->
+  <div id="modal-settings" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">Email &amp; SMTP Settings</div>
+        <button class="modal-close-btn" onclick="App.closeModal('modal-settings')">&times;</button>
+      </div>
+      <form onsubmit="App.handleSaveSettings(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-main); cursor: pointer;">
+              <input type="checkbox" id="smtp-enabled" style="accent-color: var(--dfox-magenta); width: 16px; height: 16px;">
+              <span><strong>Enable Live SMTP Dispatch</strong> (If unchecked, notifications are recorded in Email Center)</span>
+            </label>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">SMTP Host</label>
+              <input type="text" id="smtp-host" class="form-control" placeholder="smtp.gmail.com">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Port</label>
+              <input type="number" id="smtp-port" class="form-control" placeholder="587" value="587">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Username</label>
+              <input type="text" id="smtp-user" class="form-control" placeholder="notifications@dfoxmedia.com">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <input type="password" id="smtp-pass" class="form-control" placeholder="••••••••">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Sender Name</label>
+              <input type="text" id="smtp-from-name" class="form-control" placeholder="DFOX Media Tracker">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Sender Email</label>
+              <input type="email" id="smtp-from-email" class="form-control" placeholder="no-reply@dfoxmedia.com">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-main); cursor: pointer;">
+              <input type="checkbox" id="smtp-tls" checked style="accent-color: var(--dfox-magenta); width: 16px; height: 16px;">
+              <span>Use TLS Security</span>
+            </label>
+          </div>
+
+          <div style="background: #f8fafc; border: 1px solid var(--dfox-border-subtle); border-radius: var(--radius-md); padding: 1rem; margin-top: 1rem;">
+            <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">Test Connection</div>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="email" id="smtp-test-recipient" class="form-control" placeholder="Test email recipient">
+              <button type="button" id="btn-test-smtp" class="btn btn-secondary" onclick="App.handleTestSMTP()">Test Connection</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModal('modal-settings')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Settings</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL 5: EMAIL PREVIEW
+       ========================================================================== -->
+  <div id="modal-email-preview" class="modal-overlay">
+    <div class="modal-card" style="max-width: 720px;">
+      <div class="modal-header">
+        <div class="modal-title">Email Notification Preview</div>
+        <button class="modal-close-btn" onclick="App.closeModal('modal-email-preview')">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 1rem;">
+        <iframe id="email-preview-frame" style="width: 100%; height: 500px; border: none; border-radius: var(--radius-md); background: #f8f9fa;"></iframe>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="App.closeModal('modal-email-preview')">Close Preview</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="/js/api.js"></script>
+  <script src="/js/timer.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

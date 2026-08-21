@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: dfox-dev-tracker
+    runtime: python
+    buildCommand: "echo 'No extra build steps required'"
+    startCommand: "python server.py"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.6

@@ -1,0 +1,2 @@
+# DFOX Dev Task Tracker uses Python Standard Library (zero external dependencies required)
+# Ready for instant deployment
